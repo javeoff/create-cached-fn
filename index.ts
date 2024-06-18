@@ -2,6 +2,13 @@ import { promises as fs } from 'fs';
 
 type PromiseFunction<T> = () => Promise<T>;
 
+/**
+  * Create a cached function
+  * @param promiseFunc - the promise function
+  * @param filePath - the file path
+  * @param alwaysRunPromise - run the promise at startup or skip waiting
+  * @returns - the result of cached function
+  */
 export default function createCachedFn<T>(
   promiseFunc: PromiseFunction<T>,
   filePath: string,

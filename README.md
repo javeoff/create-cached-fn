@@ -30,10 +30,14 @@ createCachedFn(
 
 To install dependencies:
 
+```bash
+npm install
+```
+
 To build:
 
 ```bash
-pnpm build
+npm build
 ```
 
 This project was created using `bun init` in bun v1.1.0. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
