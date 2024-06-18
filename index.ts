@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 
-type PromiseFunction<T> = () => Promise<T>;
+type PromiseFunction<T, A extends any[]> = (...args: A) => Promise<T>;
 
 /**
   * Create a cached function
@@ -9,11 +9,11 @@ type PromiseFunction<T> = () => Promise<T>;
   * @param alwaysRunPromise - run the promise at startup or skip waiting
   * @returns - the result of cached function
   */
-export default function createCachedFn<T>(
-  promiseFunc: PromiseFunction<T>,
+export default function createCachedFn<T, A extends any[]>(
+  promiseFunc: PromiseFunction<T, A>,
   filePath: string,
   alwaysRunPromise = false
-): () => Promise<T> {
+): (...args: A) => Promise<T> {
   let cachedResult: T | null = null;
   let promiseInProgress: Promise<T> | null = null;
   let firstRun = true;
@@ -35,16 +35,16 @@ export default function createCachedFn<T>(
     await fs.writeFile(filePath, JSON.stringify(data), 'utf-8');
   }
 
-  async function executePromise(): Promise<T> {
-    const result = await promiseFunc();
+  async function executePromise(...args: A): Promise<T> {
+    const result = await promiseFunc(...args);
     await writeCache(result);
     return result;
   }
 
-  return async function getResult(): Promise<T> {
-    if (firstRun) {
+  return async function getResult(...args: A): Promise<T> {
+    if (firstRun && alwaysRunPromise) {
       firstRun = false;
-      promiseInProgress = executePromise();
+      promiseInProgress = executePromise(...args);
       const result = await promiseInProgress;
       promiseInProgress = null;
       cachedResult = result;
@@ -52,7 +52,7 @@ export default function createCachedFn<T>(
     }
 
     if (alwaysRunPromise) {
-      promiseInProgress = executePromise().then(result => {
+      promiseInProgress = executePromise(...args).then(result => {
         cachedResult = result;
         promiseInProgress = null;
         return result;
@@ -61,7 +61,7 @@ export default function createCachedFn<T>(
         throw error;
       });
     } else if (promiseInProgress === null) {
-      promiseInProgress = executePromise().then(result => {
+      promiseInProgress = executePromise(...args).then(result => {
         cachedResult = result;
         promiseInProgress = null;
         return result;
@@ -76,6 +76,7 @@ export default function createCachedFn<T>(
     }
 
     cachedResult = await readCache();
+    console.log('c', !!cachedResult)
     if (cachedResult !== null) {
       return cachedResult;
     }
@@ -84,7 +85,7 @@ export default function createCachedFn<T>(
       return promiseInProgress;
     }
 
-    promiseInProgress = executePromise().then(result => {
+    promiseInProgress = executePromise(...args).then(result => {
       cachedResult = result;
       promiseInProgress = null;
       return result;
