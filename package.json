@@ -2,7 +2,7 @@
   "name": "create-cached-fn",
   "type": "module",
   "main": "dist/index.js",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "scripts": {
     "test": "bun --env-file=../../.env.test test",
     "build": "pnpm run build:compile && pnpm run build:types",

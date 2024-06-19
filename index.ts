@@ -50,6 +50,10 @@ export default function createCachedFn<T, A extends any[]>(
       cachedResult = result;
       return result;
     }
+    cachedResult = await readCache();
+    if (firstRun && cachedResult !== null) {
+      return cachedResult;
+    }
 
     if (alwaysRunPromise) {
       promiseInProgress = executePromise(...args).then(result => {
@@ -71,12 +75,6 @@ export default function createCachedFn<T, A extends any[]>(
       });
     }
 
-    if (cachedResult !== null) {
-      return cachedResult;
-    }
-
-    cachedResult = await readCache();
-    console.log('c', !!cachedResult)
     if (cachedResult !== null) {
       return cachedResult;
     }
